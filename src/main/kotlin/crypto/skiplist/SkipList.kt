@@ -50,7 +50,7 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
                 val newRoot = SkipListNode(null, tail, down = root)
                 root.up = newRoot
                 root = newRoot
-                updateStack.addLast(root)
+                //updateStack.addLast(root)
                 root
             }
 
@@ -62,8 +62,8 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
             //newNode.updateHash()
             //top.updateHash()
 
-            updateStack.addLast(top)
             updateStack.addLast(newNode)
+            updateStack.addLast(top)
 
             var prevNode = top
             while (stack.isNotEmpty() && stack.peekFirst().right == prevNode) {
@@ -111,7 +111,7 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
     }
 
     override fun find(element: E): CryptoPath {
-        val path = findPath(element)
+        val path = findPath2(element)
 
         val v1 = path.pollFirst()
         val isFound = v1.value == element

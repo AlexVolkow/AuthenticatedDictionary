@@ -11,7 +11,7 @@ object Hash {
     private val digest = MessageDigest.getInstance("SHA-256")
 
     fun hash(arg1: ByteArray, arg2: ByteArray): ByteArray {
-        return digest.digest(if (arg1 < arg2) {
+        return /*digest.digest*/(if (arg1 < arg2) {
             ONE + arg1 + TWO + arg2
         } else {
             ONE + arg2 + TWO + arg1

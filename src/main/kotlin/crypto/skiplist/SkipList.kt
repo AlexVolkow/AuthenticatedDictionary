@@ -38,6 +38,7 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
         size++
 
         var towerNode: SkipListNode<E>? = null
+
         do {
             val top = if (stack.isNotEmpty()) {
                 stack.pollFirst()

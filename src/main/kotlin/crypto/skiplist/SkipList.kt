@@ -36,14 +36,21 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
         }
 
         size++
-
+        val updateStack = LinkedList<SkipListNode<E>>()
         var towerNode: SkipListNode<E>? = null
 
         do {
             val top = if (stack.isNotEmpty()) {
                 stack.pollFirst()
             } else {
-                addLevel()
+                val newTail = SkipListNode(null, null, down = tail)
+                tail.up = newTail
+                tail = newTail
+                tail.updateHash()
+                val newRoot = SkipListNode(null, tail, down = root)
+                root.up = newRoot
+                root = newRoot
+                updateStack.addLast(root)
                 root
             }
 
@@ -52,18 +59,33 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
             towerNode?.up = newNode
             towerNode = newNode
 
-            newNode.updateHash()
-            top.updateHash()
+            //newNode.updateHash()
+            //top.updateHash()
+
+            updateStack.addLast(top)
+            updateStack.addLast(newNode)
 
             var prevNode = top
             while (stack.isNotEmpty() && stack.peekFirst().right == prevNode) {
                 prevNode = stack.pollFirst()
-                prevNode.updateHash()
+                //prevNode.updateHash()
+                updateStack.addLast(prevNode)
             }
         } while (random.nextBoolean())
 
         if (root.right != tail) {
-            addLevel()
+            val newTail = SkipListNode(null, null, down = tail)
+            tail.up = newTail
+            tail = newTail
+            tail.updateHash()
+            val newRoot = SkipListNode(null, tail, down = root)
+            root.up = newRoot
+            root = newRoot
+            updateStack.addLast(root)
+        }
+
+        for (i in updateStack) {
+            i.updateHash()
         }
 
         while (stack.isNotEmpty()) {
@@ -163,6 +185,7 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
         while (root.down != null && root.down!!.right == tail.down) {
             root = root.down!!
             tail = tail.down!!
+            root.updateHash()
         }
         return true
     }

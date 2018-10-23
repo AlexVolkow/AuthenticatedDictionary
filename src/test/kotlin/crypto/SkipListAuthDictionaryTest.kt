@@ -7,17 +7,17 @@ import org.junit.jupiter.api.Assertions.*
 internal class SkipListAuthDictionaryTest {
 
     private val trustedSource = SkipListSourceAuthDictionary<String>()
-    private val mirror = SkipListMirrovAuthDictionary<String>()
+
 
     init {
-        trustedSource.insert("Hello, ").execute(mirror)
-        trustedSource.insert("World ").execute(mirror)
+        trustedSource.insert("Hello, ")//.execute(mirror)
+        trustedSource.insert("World ")//.execute(mirror)
     }
 
     @Test
     fun `test object found`() {
         val basis = trustedSource.getBasis()
-        val query = mirror.contains("Hello ")
+        val query = trustedSource.contains("Hello, ")
         assertTrue(query.subjectContained())
         assertTrue(query.validate(basis))
     }
@@ -25,7 +25,7 @@ internal class SkipListAuthDictionaryTest {
     @Test
     fun `test object not found`() {
         val basis = trustedSource.getBasis()
-        val query = mirror.contains("Arina")
+        val query = trustedSource.contains("Arina")
         assertFalse(query.subjectContained())
         assertTrue(query.validate(basis))
     }
@@ -33,8 +33,8 @@ internal class SkipListAuthDictionaryTest {
     @Test
     fun `test basis changed`() {
         val basis = trustedSource.getBasis()
-        trustedSource.insert("of Tanks").execute(mirror)
-        val query = mirror.contains("Hello")
+        trustedSource.insert("of Tanks")//.execute(mirror)
+        val query = trustedSource.contains("Hello, ")
         assertTrue(query.subjectContained())
         assertFalse(query.validate(basis))
     }

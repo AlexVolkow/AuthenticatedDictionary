@@ -7,9 +7,9 @@ object Hash {
 
     fun hash(arg1: ByteArray, arg2: ByteArray): ByteArray {
         return digest.digest(if (arg1 < arg2) {
-            arg1 + arg2
+            ByteArray(1) + arg1 + ByteArray(2) + arg2
         } else {
-            arg2 + arg1
+            ByteArray(1) + arg2 + ByteArray(2) + arg1
         })
     }
 

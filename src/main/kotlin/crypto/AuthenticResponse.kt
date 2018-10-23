@@ -4,7 +4,7 @@ import crypto.hash.Hash.hash
 
 class AuthenticResponse<T>(
     val subject: T?,
-    private val proof: Array<ByteArray>
+    private val proof: List<ByteArray>
 ) {
     fun subjectContained() = subject != null
 

@@ -1,81 +1,83 @@
 package crypto.skiplist
 
-import java.util.*
+class SkipList<E : Comparable<E>> : CryptoSet<E> {
 
-class SkipList<T : Comparable<T>>: ListSet<T> {
+    companion object {
+        private const val PROBABILITY = 0.5
+    }
 
-    private val random = Random()
-    private var root: Node<T> = Node()
+    private val head: SkipListNode<E>
+    private var maxLevel: Int = 0
     private var size: Int = 0
 
-    override fun find(element: T): Boolean {
-        var node = root
-
-        do {
-            while (node.right != null && node.right!! <= element) {
-                node = node.right!!
-            }
-            if (node.down != null) {
-                node = node.down!!
-            } else {
-                break
-            }
-        } while (true)
-
-        return node.compareTo(element) == 0
+    init {
+        size = 0
+        maxLevel = 0
+        head = SkipListNode(null)
+        head.nextNodes.add(null)
     }
 
-    override fun insert(element: T) {
+    override fun size(): Int {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun insert(element: E): Boolean {
+        if (contains(element)) return false
         size++
-
-        val stack: Deque<Node<T>> = findPath(element)
-
-        var tmp: Node<T>? = null
+        var level = 0
+        while (Math.random() < PROBABILITY)
+            level++
+        while (level > maxLevel) {
+            head.nextNodes.add(null)
+            maxLevel++
+        }
+        val newNode = SkipListNode(element)
+        var current: SkipListNode<E> = head
         do {
-            val top = if (stack.isEmpty()) {
-                val newRoot = Node(null, null, root)
-                root = newRoot
-                newRoot
-            } else {
-                stack.pollFirst()
-            }
-            val newNode = Node(element, top.right, tmp)
-            top.right = newNode
-            tmp = newNode
-        } while (random.nextBoolean())
+            current = findNext(element, current, level)
+            newNode.nextNodes.add(0, current.nextNodes[level])
+            current.nextNodes[level] = newNode
+        } while (level-- > 0)
+        return true
     }
 
-    override fun delete(element: T) {
-        val stack: Deque<Node<T>> = findPath(element)
-
-        var top = stack.peekFirst()
-        while (stack.isNotEmpty() && top.right == element) {
-            top.right = top.right?.right
-            top = stack.pollFirst()
-        }
-
-        while (root.right == null && root.down != null) {
-            root = root.down!!
-        }
+    override fun delete(element: E) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun size(): Int = size
+    override fun structureHash(): ByteArray {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
-    private fun findPath(element: T): Deque<Node<T>> {
-        val stack: Deque<Node<T>> = LinkedList<Node<T>>()
-        var node = root
+    override fun find(element: E): CryptoPath {
+        val node = find(element)
+        return node.value != null && node.value.compareTo(element) == 0
+    }
 
+    fun contains(element: E): Boolean {
+        return find(element).isFound
+    }
+
+    private fun find(e: E, current: SkipListNode<E> = head, level: Int = maxLevel): SkipListNode<E> {
+        var current = current
+        var level = level
         do {
-            while (node.right != null && node < element) {
-                node = node.right!!
-            }
-            stack.addFirst(node)
-            if (node.down != null) {
-                node = node.down!!
-            } else {
+            current = findNext(e, current, level)
+        } while (level-- > 0)
+        return current
+    }
+
+    private fun findNext(e: E, current: SkipListNode<E>, level: Int): SkipListNode<E> {
+        var current = current
+        var next: SkipListNode<E>? = current.nextNodes[level]
+        while (next != null) {
+            val value = next.value
+            if (e.compareTo(value) < 0)
                 break
-            }
-        } while (true)
-        return stack
+
+            current = next
+            next = current.nextNodes[level]
+        }
+        return current
     }
 }

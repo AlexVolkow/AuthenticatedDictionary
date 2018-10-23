@@ -9,5 +9,5 @@ interface AuthenticatedDictionary<T> {
 
     fun getBasis(): Basis
 
-    fun validateBasis(basis: Basis): Basis
+    fun validateBasis(basis: Basis): Boolean
 }

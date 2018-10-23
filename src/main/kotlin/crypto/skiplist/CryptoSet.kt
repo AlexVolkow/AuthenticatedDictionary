@@ -1,6 +1,6 @@
 package crypto.skiplist
 
-interface CryptoSet<T: Comparable<T>> {
+interface CryptoSet<T: Comparable<T>>: Iterable<T> {
     fun size(): Int
 
     fun isEmpty(): Boolean = size() == 0
@@ -9,11 +9,13 @@ interface CryptoSet<T: Comparable<T>> {
 
     fun insert(element: T): Boolean
 
-    fun delete(element: T)
-
     fun structureHash(): ByteArray
 
     fun insertAll(elements: Collection<T>) {
         elements.forEach { insert(it) }
+    }
+
+    fun contains(element: T): Boolean {
+        return find(element).isFound
     }
 }

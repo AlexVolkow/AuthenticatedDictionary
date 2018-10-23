@@ -1,83 +1,161 @@
 package crypto.skiplist
 
+import crypto.hash.toBytes
+import java.util.*
+import kotlin.collections.ArrayList
+
 class SkipList<E : Comparable<E>> : CryptoSet<E> {
 
-    companion object {
-        private const val PROBABILITY = 0.5
-    }
-
-    private val head: SkipListNode<E>
-    private var maxLevel: Int = 0
+    private val random = Random()
+    private var root: SkipListNode<E>
     private var size: Int = 0
 
     init {
         size = 0
-        maxLevel = 0
-        head = SkipListNode(null)
-        head.nextNodes.add(null)
+        root = SkipListNode(null)
+        root.hash()
     }
 
-    override fun size(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    fun getHead(): SkipListNode<E> {
+        return root
     }
 
+    override fun size(): Int = size
+
+    /**
+     * Adds e to the skiplist.
+     * Returns false if already in skiplist, true otherwise
+     */
     override fun insert(element: E): Boolean {
-        if (contains(element)) return false
-        size++
-        var level = 0
-        while (Math.random() < PROBABILITY)
-            level++
-        while (level > maxLevel) {
-            head.nextNodes.add(null)
-            maxLevel++
+        val stack = findPath(element)
+
+        if (stack.peekFirst().value == element) {
+            return false
         }
-        val newNode = SkipListNode(element)
-        var current: SkipListNode<E> = head
+
+        size++
+
+        var towerNode: SkipListNode<E>? = null
         do {
-            current = findNext(element, current, level)
-            newNode.nextNodes.add(0, current.nextNodes[level])
-            current.nextNodes[level] = newNode
-        } while (level-- > 0)
+            val top = if (stack.isNotEmpty()) {
+                stack.pollFirst()
+            } else {
+                val newRoot = SkipListNode(null, null, root)
+                root.up = newRoot
+                root = newRoot
+                newRoot
+            }
+
+            val newNode = SkipListNode(element, top.right, towerNode)
+            top.right = newNode
+            towerNode?.up = newNode
+            towerNode = newNode
+
+            newNode.updateHash()
+            top.updateHash()
+
+            var prevNode = top
+            while (stack.isNotEmpty() && stack.peekFirst().right == prevNode) {
+                prevNode = stack.pollFirst()
+                prevNode.updateHash()
+            }
+        } while (random.nextBoolean())
+
+        while (stack.isNotEmpty()) {
+            stack.pollFirst().updateHash()
+        }
+
         return true
     }
 
-    override fun delete(element: E) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
     override fun structureHash(): ByteArray {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return root.hash()
     }
 
     override fun find(element: E): CryptoPath {
-        val node = find(element)
-        return node.value != null && node.value.compareTo(element) == 0
-    }
+        val path = findPath(element)
+        val m = path.size
 
-    fun contains(element: E): Boolean {
-        return find(element).isFound
-    }
+        val v1 = path.pollFirst()
 
-    private fun find(e: E, current: SkipListNode<E> = head, level: Int = maxLevel): SkipListNode<E> {
-        var current = current
-        var level = level
-        do {
-            current = findNext(e, current, level)
-        } while (level-- > 0)
-        return current
-    }
+        val isFound = v1.value == element
 
-    private fun findNext(e: E, current: SkipListNode<E>, level: Int): SkipListNode<E> {
-        var current = current
-        var next: SkipListNode<E>? = current.nextNodes[level]
-        while (next != null) {
-            val value = next.value
-            if (e.compareTo(value) < 0)
-                break
-
-            current = next
-            next = current.nextNodes[level]
+        val proof = ArrayList<ByteArray>()
+        val w1 = v1.right()
+        if (w1.isPlateau()) {
+            proof.add(w1.hash())
+        } else {
+            proof.add(w1.value.toBytes())
         }
-        return current
+
+        proof.add(v1.toBytes())
+
+        var j = 1
+        var prevNode = v1
+        for (i in 1 until m) {
+            val v = path.pollFirst()
+            val w = v.right()
+            if (w.isPlateau()) {
+                j++
+                if (w != prevNode) {
+                    proof.add(w.hash())
+                } else {
+                    if (v.isBase()) {
+
+                    }
+                }
+            }
+            prevNode = w
+        }
+    }
+
+    override fun contains(element: E): Boolean {
+        var node = root
+
+        do {
+            while (node.right != null && node.right!!.value!! <= element) {
+                node = node.right!!
+            }
+            if (node.down != null) {
+                node = node.down!!
+            } else {
+                break
+            }
+        } while (true)
+
+        if (node.value == null) {
+            return false
+        }
+        return node.value!!.compareTo(element) == 0
+    }
+
+    override fun iterator(): Iterator<E> {
+        return SkipListIterator(this)
+    }
+
+    override fun toString(): String {
+        var s = "SkipList: "
+        for (o in this)
+            s += o.toString() + ", "
+        return s.substring(0, s.length - 2)
+    }
+
+    private fun findPath(element: E): Deque<SkipListNode<E>> {
+        val stack = LinkedList<SkipListNode<E>>()
+        var node = root
+
+        do {
+            while (node.right != null && node.right!!.value!! <= element) {
+                stack.addFirst(node)
+                node = node.right!!
+            }
+            stack.addFirst(node)
+            if (node.down != null) {
+                node = node.down!!
+            } else {
+                break
+            }
+        } while (true)
+        return stack
     }
 }

@@ -1,8 +1,5 @@
 package crypto
 
-import crypto.skiplist.CryptoSet
-import crypto.skiplist.SkipList
-
 class SkipListSourceAuthDictionary<T : Comparable<T>> : SkipListAuthDictionary<T>(), SourceAuthenticatedDictionary<T> {
 
     override fun insert(o: T): Update<T> {
@@ -17,5 +14,4 @@ class SkipListSourceAuthDictionary<T : Comparable<T>> : SkipListAuthDictionary<T
     override fun remove(o: T): Update<T> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
-
 }

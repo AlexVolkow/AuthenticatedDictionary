@@ -13,7 +13,9 @@ class AuthenticResponse<T>(
         for (i in 2 until proof.size) {
             hash = hash(hash, proof[i])
         }
-
+        println(hash.contentToString())
+        println(basis)
         return hash.contentEquals(basis.encoded)
+
     }
 }

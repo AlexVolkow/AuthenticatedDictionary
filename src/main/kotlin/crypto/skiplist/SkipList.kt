@@ -8,11 +8,13 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
 
     private val random = Random()
     private var root: SkipListNode<E>
+    private var tail: SkipListNode<E>
     private var size: Int = 0
 
     init {
         size = 0
-        root = SkipListNode(null)
+        tail = SkipListNode(null)
+        root = SkipListNode(null, tail)
         root.hash()
     }
 
@@ -40,10 +42,8 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
             val top = if (stack.isNotEmpty()) {
                 stack.pollFirst()
             } else {
-                val newRoot = SkipListNode(null, null, root)
-                root.up = newRoot
-                root = newRoot
-                newRoot
+                addLevel()
+                root
             }
 
             val newNode = SkipListNode(element, top.right, towerNode)
@@ -61,11 +61,24 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
             }
         } while (random.nextBoolean())
 
+        if (root.right!= tail) {
+            addLevel()
+        }
+
         while (stack.isNotEmpty()) {
             stack.pollFirst().updateHash()
         }
 
         return true
+    }
+
+    private fun addLevel() {
+        val newTail = SkipListNode(null, null, tail)
+        tail.up = newTail
+        tail = newTail
+        val newRoot = SkipListNode(null, tail, root)
+        root.up = newRoot
+        root = newRoot
     }
 
     override fun structureHash(): ByteArray {
@@ -116,7 +129,7 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
         var node = root
 
         do {
-            while (node.right != null && node.right!!.value!! <= element) {
+            while (node.right!!.right != null && node.right!!.value!! <= element) {
                 node = node.right!!
             }
             if (node.down != null) {
@@ -148,7 +161,7 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
         var node = root
 
         do {
-            while (node.right != null && node.right!!.value!! <= element) {
+            while (node.right!!.right != null && node.right!!.value!! <= element) {
                 stack.addFirst(node)
                 node = node.right!!
             }

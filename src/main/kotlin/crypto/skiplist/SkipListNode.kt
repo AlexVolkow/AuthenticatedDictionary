@@ -26,8 +26,10 @@ class SkipListNode<E>(
     }
 
     fun updateHash(): ByteArray {
-        val w = right()
-
+        if(right == null) {
+            return ZERO
+        }
+        val w = right!!
         return if (isBase()) {
             if (w.isTower()) {
                 Hash.hash(value, w.value)

@@ -61,7 +61,7 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
             }
         } while (random.nextBoolean())
 
-        if (root.right!= tail) {
+        if (root.right != tail) {
             addLevel()
         }
 
@@ -92,7 +92,7 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
         val isFound = v1.value == element
 
         val proof = ArrayList<ByteArray>()
-        val w1 = v1.right()
+        val w1 = v1.right!!
         if (w1.isPlateau()) {
             proof.add(w1.hash())
         } else {
@@ -104,7 +104,7 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
         var prevNode = v1
         while (path.isNotEmpty()) {
             val v = path.pollFirst()
-            val w = v.right()
+            val w = v.right!!
             if (w.isPlateau()) {
                 if (w != prevNode) {
                     proof.add(w.hash())
@@ -120,7 +120,18 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
             prevNode = w
         }
 
-        return CryptoPath(isFound, proof)
+        val z1 = v1.right!!
+        return when {
+            w1.isTower() -> CryptoPath(isFound, proof)
+            w1.isPlateau() && z1.isTower() -> CryptoPath(
+                isFound,
+                listOf(z1.value.toBytes(), w1.value.toBytes()) + proof
+            )
+            w1.isPlateau() && z1.isPlateau() -> CryptoPath(isFound,
+                listOf(z1.hash(), w1.value.toBytes()) + proof
+            )
+            else -> throw IllegalStateException("SkipList in incorrect state")
+        }
     }
 
     override fun contains(element: E): Boolean {

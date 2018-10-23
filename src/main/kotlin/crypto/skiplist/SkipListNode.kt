@@ -17,14 +17,6 @@ class SkipListNode<E>(
 
     fun isBase() = down == null
 
-    fun right(): SkipListNode<E> {
-        return if (right != null) {
-            SkipListNode(null, hash = ZERO)
-        } else {
-            right!!
-        }
-    }
-
     fun updateHash(): ByteArray {
         if(right == null) {
             return ZERO

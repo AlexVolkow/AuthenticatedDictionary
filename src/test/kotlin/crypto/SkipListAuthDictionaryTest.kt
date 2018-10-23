@@ -1,5 +1,6 @@
 package crypto
 
+import crypto.skiplist.SkipList
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -31,11 +32,18 @@ internal class SkipListAuthDictionaryTest {
     }
 
     @Test
-    fun `test basis changed`() {
+    fun `test basis changed by source`() {
         val basis = trustedSource.getBasis()
         trustedSource.insert("of Tanks")//.execute(mirror)
         val query = trustedSource.contains("Hello, ")
         assertTrue(query.subjectContained())
         assertFalse(query.validate(basis))
+    }
+
+    @Test
+    fun `test basis changed by user`() {
+        val skipList = SkipList<String>()
+        skipList.insert("ABC")
+        assertFalse(trustedSource.validateBasis(Basis(skipList.structureHash())))
     }
 }

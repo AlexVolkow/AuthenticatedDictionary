@@ -5,8 +5,8 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class SkipList<E : Comparable<E>> : CryptoSet<E> {
-
     private val random = Random()
+
     private var root: SkipListNode<E>
     private var tail: SkipListNode<E>
     private var size: Int = 0
@@ -14,8 +14,8 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
     init {
         size = 0
         tail = SkipListNode(null)
-        root = SkipListNode(null, tail)
-        root.hash()
+        root = SkipListNode(null, right = tail)
+        root.updateHash()
     }
 
     fun getHead(): SkipListNode<E> {
@@ -29,9 +29,9 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
      * Returns false if already in skiplist, true otherwise
      */
     override fun insert(element: E): Boolean {
-        val stack = findPath(element)
+        val stack = findPath2(element)
 
-        if (stack.peekFirst().value == element) {
+        if (stack.peekFirst().right!!.value == element) {
             return false
         }
 
@@ -73,12 +73,14 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
     }
 
     private fun addLevel() {
-        val newTail = SkipListNode(null, null, tail)
+        val newTail = SkipListNode(null, null, down = tail)
         tail.up = newTail
         tail = newTail
-        val newRoot = SkipListNode(null, tail, root)
+        tail.updateHash()
+        val newRoot = SkipListNode(null, tail, down = root)
         root.up = newRoot
         root = newRoot
+        root.updateHash()
     }
 
     override fun structureHash(): ByteArray {
@@ -124,34 +126,44 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
         return when {
             w1.isTower() -> CryptoPath(isFound, proof)
             w1.isPlateau() && z1.isTower() -> CryptoPath(
-                isFound,
-                listOf(z1.value.toBytes(), w1.value.toBytes()) + proof
+                    isFound,
+                    listOf(z1.value.toBytes(), w1.value.toBytes()) + proof
             )
             w1.isPlateau() && z1.isPlateau() -> CryptoPath(isFound,
-                listOf(z1.hash(), w1.value.toBytes()) + proof
+                    listOf(z1.hash(), w1.value.toBytes()) + proof
             )
             else -> throw IllegalStateException("SkipList in incorrect state")
         }
     }
 
     override fun contains(element: E): Boolean {
-        var node = root
+        return findPath2(element).peekFirst().right!!.value == element
+    }
 
-        do {
-            while (node.right!!.right != null && node.right!!.value!! <= element) {
-                node = node.right!!
-            }
-            if (node.down != null) {
-                node = node.down!!
-            } else {
-                break
-            }
-        } while (true)
+    override fun remove(element: E): Boolean {
+        val stack = findPath2(element)
 
-        if (node.value == null) {
+        if (stack.peekFirst().right!!.value != element) {
             return false
         }
-        return node.value!!.compareTo(element) == 0
+        size--
+        while (stack.isNotEmpty()) {
+            var curNode = stack.pollFirst()
+            if (curNode.right!!.right != null && curNode.right!!.value == element) {
+                curNode.right = curNode.right!!.right
+                curNode.updateHash()
+            }
+            while (stack.isNotEmpty() && stack.peekFirst().right == curNode) {
+                curNode = stack.pollFirst()
+                curNode.updateHash()
+            }
+        }
+
+        while (root.down != null && root.down!!.right == tail.down) {
+            root = root.down!!
+            tail = tail.down!!
+        }
+        return true
     }
 
     override fun iterator(): Iterator<E> {
@@ -170,7 +182,27 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
         var node = root
 
         do {
+            // println(node.toString() + " " + node.right)
             while (node.right!!.right != null && node.right!!.value!! <= element) {
+                stack.addFirst(node)
+                node = node.right!!
+            }
+            stack.addFirst(node)
+            if (node.down != null) {
+                node = node.down!!
+            } else {
+                break
+            }
+        } while (true)
+        return stack
+    }
+    private fun findPath2(element: E): Deque<SkipListNode<E>> {
+        val stack = LinkedList<SkipListNode<E>>()
+        var node = root
+
+        do {
+           // println(node.toString() + " " + node.right)
+            while (node.right!!.right != null && node.right!!.value!! < element) {
                 stack.addFirst(node)
                 node = node.right!!
             }

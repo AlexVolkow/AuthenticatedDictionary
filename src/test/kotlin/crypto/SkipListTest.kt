@@ -37,22 +37,22 @@ internal class SkipListTest {
                     }
                 }
                 2 -> {
-                   /* //delete value that wasn't in the list
+                    //delete value that wasn't in the list
                     val x = notYetAdded.shuffled().first()
-                    skipList.delete(x)
-                    trace.add("delete $x")*/
+                    skipList.remove(x)
+                    trace.add("delete $x")
                 }
                 3 -> {
                     //delete value that was in the list
-                   /* if (wereAdded.isEmpty()) {
+                    if (wereAdded.isEmpty()) {
                         assertEquals(0, skipList.size(), "Accidentally not empty.\n ${printTrace()}")
                     } else {
                         val x = wereAdded.shuffled().first()
-                        skipList.delete(x)
+                        skipList.remove(x)
                         wereAdded.remove(x)
                         notYetAdded.add(x)
                         trace.add("delete $x")
-                    }*/
+                    }
                 }
                 4 -> {
                     //find added value

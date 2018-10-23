@@ -9,6 +9,8 @@ interface CryptoSet<T: Comparable<T>>: Iterable<T> {
 
     fun insert(element: T): Boolean
 
+    fun remove(element: T): Boolean
+
     fun structureHash(): ByteArray
 
     fun insertAll(elements: Collection<T>) {

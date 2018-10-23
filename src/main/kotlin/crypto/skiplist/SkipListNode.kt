@@ -19,10 +19,11 @@ class SkipListNode<E>(
 
     fun updateHash(): ByteArray {
         if(right == null) {
-            return ZERO
+            hash = ZERO
+            return hash!!
         }
         val w = right!!
-        return if (isBase()) {
+        hash = if (isBase()) {
             if (w.isTower()) {
                 Hash.hash(value, w.value)
             } else {
@@ -36,6 +37,7 @@ class SkipListNode<E>(
                 Hash.hash(u.hash(), w.hash())
             }
         }
+        return hash!!
     }
 
     fun hash(): ByteArray {

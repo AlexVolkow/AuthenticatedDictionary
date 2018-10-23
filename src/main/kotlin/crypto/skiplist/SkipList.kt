@@ -29,7 +29,7 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
      * Returns false if already in skiplist, true otherwise
      */
     override fun insert(element: E): Boolean {
-        val stack = findPath(element)
+        val stack = findPath2(element)
 
         if (stack.peekFirst().right!!.value == element) {
             return false
@@ -137,11 +137,11 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
     }
 
     override fun contains(element: E): Boolean {
-        return findPath(element).peekFirst().right!!.value == element
+        return findPath2(element).peekFirst().right!!.value == element
     }
 
     override fun remove(element: E): Boolean {
-        val stack = findPath(element)
+        val stack = findPath2(element)
 
         if (stack.peekFirst().right!!.value != element) {
             return false
@@ -178,6 +178,25 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
     }
 
     private fun findPath(element: E): Deque<SkipListNode<E>> {
+        val stack = LinkedList<SkipListNode<E>>()
+        var node = root
+
+        do {
+            // println(node.toString() + " " + node.right)
+            while (node.right!!.right != null && node.right!!.value!! <= element) {
+                stack.addFirst(node)
+                node = node.right!!
+            }
+            stack.addFirst(node)
+            if (node.down != null) {
+                node = node.down!!
+            } else {
+                break
+            }
+        } while (true)
+        return stack
+    }
+    private fun findPath2(element: E): Deque<SkipListNode<E>> {
         val stack = LinkedList<SkipListNode<E>>()
         var node = root
 

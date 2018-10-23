@@ -88,13 +88,11 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
 
         proof.add(v1.value.toBytes())
 
-        var j = 1
         var prevNode = v1
         while (path.isNotEmpty()) {
             val v = path.pollFirst()
             val w = v.right()
             if (w.isPlateau()) {
-                j++
                 if (w != prevNode) {
                     proof.add(w.hash())
                 } else {

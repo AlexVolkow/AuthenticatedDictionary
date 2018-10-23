@@ -74,10 +74,8 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
 
     override fun find(element: E): CryptoPath {
         val path = findPath(element)
-        val m = path.size
 
         val v1 = path.pollFirst()
-
         val isFound = v1.value == element
 
         val proof = ArrayList<ByteArray>()
@@ -88,11 +86,11 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
             proof.add(w1.value.toBytes())
         }
 
-        proof.add(v1.toBytes())
+        proof.add(v1.value.toBytes())
 
         var j = 1
         var prevNode = v1
-        for (i in 1 until m) {
+        while (path.isNotEmpty()) {
             val v = path.pollFirst()
             val w = v.right()
             if (w.isPlateau()) {
@@ -101,12 +99,17 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
                     proof.add(w.hash())
                 } else {
                     if (v.isBase()) {
-
+                        proof.add(v1.value.toBytes())
+                    } else {
+                        val u = v.down!!
+                        proof.add(u.hash())
                     }
                 }
             }
             prevNode = w
         }
+
+        return CryptoPath(isFound, proof)
     }
 
     override fun contains(element: E): Boolean {

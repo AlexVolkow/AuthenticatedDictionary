@@ -30,7 +30,7 @@ internal class SkipListAuthDictionaryTest {
     @Test
     fun `test object not found`() {
         val basis = trustedSource.getBasis()
-        val query = trustedSource.contains("Arina")
+        val query = trustedSource.contains("Jello, ")
         assertFalse(query.subjectContained())
         assertTrue(query.validate(basis))
     }

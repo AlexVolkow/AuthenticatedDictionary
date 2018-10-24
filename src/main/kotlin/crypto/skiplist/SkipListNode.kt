@@ -41,10 +41,25 @@ class SkipListNode<E>(
     }
 
     fun hash(): ByteArray {
-        if (hash == null) {
-            hash = updateHash()
+        if(right == null) {
+            hash = ZERO
+            return hash!!
         }
-        return hash!!
+        val w = right!!
+        return if (isBase()) {
+            if (w.isTower()) {
+                Hash.hash(value.toBytes(), w.value.toBytes())
+            } else {
+                Hash.hash(value.toBytes(), w.hash())
+            }
+        } else {
+            val u = down!!
+            if (w.isTower()) {
+                u.hash()
+            } else {
+                Hash.hash(u.hash(), w.hash())
+            }
+        }
     }
 
     override fun toString(): String {

@@ -96,9 +96,11 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
         println("path")
         println(path)
         val v1 = path.pop()
+        println(path)
         val isFound = v1.value == element
 
         val proof = ArrayList<ByteArray>()
+        val nodes = mutableListOf<SkipListNode<E>>()
         val w1 = v1.right!!
 
         if (w1.isPlateau()) {
@@ -107,7 +109,10 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
             proof.add(w1.value.toBytes())
         }
 
+        nodes.add(w1)
+
         proof.add(v1.value.toBytes())
+        nodes.add(v1)
         var prevNode = v1
         while (path.size > 1) {
             val v = path.pop()
@@ -116,26 +121,30 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
             if (w.isPlateau()) {
                 if (w !== prevNode) {
                     proof.add(w.hash())
+                    nodes.add(w)
                 } else {
                     if (v.isBase()) {
                         proof.add(v.value.toBytes())
+                        nodes.add(v)
                     } else {
                         val u = v.down!!
                         proof.add(u.hash())
+                        nodes.add(u)
                     }
                 }
             }
             prevNode = v
         }
 
+        println(nodes)
         val z1 by lazy { w1.right!! }
         return when {
             w1.isTower() -> CryptoPath(isFound, proof)
             w1.isPlateau() && z1.isTower() -> CryptoPath(
                     isFound,
-                    listOf(z1.value.toBytes(), w1.value.toBytes()) + proof
+                    listOf(z1.value.toBytes()) + proof
             )
-            w1.isPlateau() && z1.isPlateau() -> CryptoPath(isFound, listOf(z1.hash(), w1.value.toBytes()) + proof)
+            w1.isPlateau() && z1.isPlateau() -> CryptoPath(isFound, listOf(z1.hash()) + proof)
             else -> throw IllegalStateException("SkipList in incorrect state")
         }
     }

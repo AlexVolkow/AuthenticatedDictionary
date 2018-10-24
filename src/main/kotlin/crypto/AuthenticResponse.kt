@@ -9,8 +9,8 @@ class AuthenticResponse<T>(
     fun subjectContained() = subject != null
 
     fun validate(basis: Basis): Boolean {
-        val hash = proof.foldRight(ByteArray(0)) { x, acc ->
-            if (acc.isNotEmpty()) hash(x, acc) else x
+        val hash = proof.fold(ByteArray(0)) { acc, x ->
+            if (acc.isNotEmpty()) hash(acc, x) else x
         }
         println(hash.contentToString())
         println(basis)

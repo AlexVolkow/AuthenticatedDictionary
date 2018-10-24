@@ -41,9 +41,9 @@ class SkipListNode<E>(
     }
 
     fun hash(): ByteArray {
-//        if (hash == null) {
+        if (hash == null) {
             hash = updateHash()
-//        }
+        }
         return hash!!
     }
 

@@ -34,7 +34,7 @@ class SkipListNode<E>(
             if (w.isTower()) {
                 u.hash()
             } else {
-                Hash.hash(w.hash(), u.hash())
+                Hash.hash(u.hash(), w.hash())
             }
         }
         return hash!!

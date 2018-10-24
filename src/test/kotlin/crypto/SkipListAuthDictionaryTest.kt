@@ -15,6 +15,9 @@ internal class SkipListAuthDictionaryTest {
         trustedSource.insert("Hello, ")
         println(trustedSource.contains("Hello, ").validate(trustedSource.getBasis()))
         trustedSource.insert("World ")
+        trustedSource.insert("A")
+        trustedSource.insert("B")
+        trustedSource.insert("C")
         println(trustedSource.contains("World ").validate(trustedSource.getBasis()))
     }
 

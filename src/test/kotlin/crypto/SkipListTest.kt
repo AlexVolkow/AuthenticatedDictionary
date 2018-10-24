@@ -60,7 +60,7 @@ internal class SkipListTest {
                         assertEquals(0, skipList.size(), "Accidentally not empty.\n ${printTrace()}")
                     } else {
                         val element = wereAdded.shuffled().first()
-                        assertTrue(skipList.contains(element), "Not found $element.\n ${printTrace()}")
+                        assertTrue(skipList.contains(element), "Not found $element.\n ${printTrace()} \n$skipList")
                     }
                 }
                 5 -> {

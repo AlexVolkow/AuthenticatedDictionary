@@ -14,4 +14,6 @@ class SkipListSourceAuthDictionary<T : Comparable<T>> : SkipListAuthDictionary<T
     override fun remove(o: T): Update<T> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    override fun toString() = data.toString()
 }

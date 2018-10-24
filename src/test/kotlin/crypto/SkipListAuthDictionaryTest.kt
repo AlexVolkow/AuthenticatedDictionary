@@ -11,14 +11,18 @@ internal class SkipListAuthDictionaryTest {
 
 
     init {
-        trustedSource.insert("Hello, ")//.execute(mirror)
-        trustedSource.insert("World ")//.execute(mirror)
+        println(trustedSource.validateBasis(trustedSource.getBasis()))
+        trustedSource.insert("Hello, ")
+        println(trustedSource.contains("Hello, ").validate(trustedSource.getBasis()))
+        trustedSource.insert("World ")
+        println(trustedSource.contains("World ").validate(trustedSource.getBasis()))
     }
 
     @Test
     fun `test object found`() {
-        val basis = trustedSource.getBasis()
+        println(trustedSource)
         val query = trustedSource.contains("Hello, ")
+        val basis = trustedSource.getBasis()
         assertTrue(query.subjectContained())
         assertTrue(query.validate(basis))
     }
@@ -34,7 +38,7 @@ internal class SkipListAuthDictionaryTest {
     @Test
     fun `test basis changed by source`() {
         val basis = trustedSource.getBasis()
-        trustedSource.insert("of Tanks")//.execute(mirror)
+        trustedSource.insert("of Tanks")
         val query = trustedSource.contains("Hello, ")
         assertTrue(query.subjectContained())
         assertFalse(query.validate(basis))

@@ -25,7 +25,7 @@ class SkipListNode<E>(
         val w = right!!
         hash = if (isBase()) {
             if (w.isTower()) {
-                Hash.hash(value, w.value)
+                Hash.hash(value.toBytes(), w.value.toBytes())
             } else {
                 Hash.hash(value.toBytes(), w.hash())
             }
@@ -34,21 +34,24 @@ class SkipListNode<E>(
             if (w.isTower()) {
                 u.hash()
             } else {
-                Hash.hash(u.hash(), w.hash())
+                Hash.hash(w.hash(), u.hash())
             }
         }
         return hash!!
     }
 
     fun hash(): ByteArray {
-        if (hash == null) {
+//        if (hash == null) {
             hash = updateHash()
-        }
-
+//        }
         return hash!!
     }
 
     override fun toString(): String {
-        return "SLN: $value"
+        return when {
+            value == null && right == null -> "+inf"
+            value == null -> "-inf"
+            else -> "SLN: $value"
+        }
     }
 }

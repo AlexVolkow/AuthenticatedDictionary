@@ -9,14 +9,11 @@ object Hash {
     private val digest = MessageDigest.getInstance("SHA-256")
 
     fun hash(arg1: ByteArray, arg2: ByteArray): ByteArray {
-        if (arg1 < arg2) {
-            digest.update(arg1)
-            digest.update(arg2)
+        return if (arg1 < arg2) {
+            digest.digest(arg1 + arg2)
         } else {
-            digest.update(arg2)
-            digest.update(arg1)
+            digest.digest(arg2 + arg1)
         }
-        return digest.digest()
     }
 
     private operator fun ByteArray.compareTo(other: ByteArray): Int {

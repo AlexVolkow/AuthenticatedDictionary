@@ -1,30 +1,28 @@
 package crypto
 
 import crypto.skiplist.SkipList
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 
 internal class SkipListAuthDictionaryTest {
 
     private val trustedSource = SkipListSourceAuthDictionary<Int>()
 
-
     init {
         with(trustedSource) {
-            insert(12, 2)
-            insert(17, 5)
-            insert(20, 1)
-            insert(22, 1)
-            insert(25, 4)
-            insert(31, 3)
-            insert(38, 2)
-            insert(39, 1)
-            insert(44, 2)
-            insert(50, 1)
-            insert(55, 4)
+            insert(12)
+            insert(17)
+            insert(20)
+            insert(22)
+            insert(25)
+            insert(31)
+            insert(38)
+            insert(39)
+            insert(44)
+            insert(50)
+            insert(55)
         }
-        println(trustedSource)
     }
 
     @Test
@@ -32,7 +30,34 @@ internal class SkipListAuthDictionaryTest {
         println(trustedSource)
         val query = trustedSource.contains(39)
         val basis = trustedSource.getBasis()
+
         assertTrue(query.subjectContained())
+        assertTrue(query.validate(basis))
+    }
+
+    @Test
+    fun `simple test`() {
+        val source = SkipListSourceAuthDictionary<Int>()
+        source.insert(12)
+
+        val query = source.contains(12)
+        val basis = source.getBasis()
+
+        assertTrue(query.subjectContained())
+        assertTrue(query.validate(basis))
+    }
+
+    @Test
+    fun `simple not found test`() {
+        val source = SkipListSourceAuthDictionary<Int>()
+        source.insert(12, 0)
+        source.insert(44, 0)
+        source.insert(52, 0)
+
+        val query = source.contains(33)
+        val basis = source.getBasis()
+
+        assertFalse(query.subjectContained())
         assertTrue(query.validate(basis))
     }
 
@@ -47,16 +72,16 @@ internal class SkipListAuthDictionaryTest {
     @Test
     fun `test basis changed by source`() {
         val basis = trustedSource.getBasis()
-//        trustedSource.insert("of Tanks")
-//        val query = trustedSource.contains("Hello, ")
-//        assertTrue(query.subjectContained())
-//        assertFalse(query.validate(basis))
+        trustedSource.insert(99)
+        val query = trustedSource.contains(39)
+        assertTrue(query.subjectContained())
+        assertFalse(query.validate(basis))
     }
 
     @Test
     fun `test basis changed by user`() {
         val skipList = SkipList<String>()
-//        skipList.insert("ABC")
-//        assertFalse(trustedSource.validateBasis(Basis(skipList.structureHash())))
+        skipList.insert("ABC")
+        assertFalse(trustedSource.validateBasis(Basis(skipList.structureHash())))
     }
 }

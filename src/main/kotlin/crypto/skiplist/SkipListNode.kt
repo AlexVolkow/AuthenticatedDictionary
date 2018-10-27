@@ -3,6 +3,7 @@ package crypto.skiplist
 import crypto.hash.Hash
 import crypto.hash.Hash.ZERO
 import crypto.hash.toBytes
+import java.util.*
 
 class SkipListNode<E>(
     val value: E?,
@@ -16,6 +17,8 @@ class SkipListNode<E>(
     fun isPlateau() = up == null
 
     fun isBase() = down == null
+
+    fun isInfinity() = right == null
 
     fun updateHash(): ByteArray {
         if(right == null) {
@@ -46,7 +49,7 @@ class SkipListNode<E>(
             return hash!!
         }
         val w = right!!
-        return if (isBase()) {
+        val h = if (isBase()) {
             if (w.isTower()) {
                 Hash.hash(value.toBytes(), w.value.toBytes())
             } else {
@@ -54,12 +57,14 @@ class SkipListNode<E>(
             }
         } else {
             val u = down!!
-            if (w.isTower() || (isPlateau() && value == null)) {
+            if (w.isTower()) {
                 u.hash()
             } else {
                 Hash.hash(u.hash(), w.hash())
             }
         }
+        //println("${toString()} ${Arrays.toString(h)}")
+        return h
     }
 
     override fun toString(): String {

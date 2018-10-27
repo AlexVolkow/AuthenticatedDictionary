@@ -54,7 +54,7 @@ class SkipListNode<E>(
             }
         } else {
             val u = down!!
-            if (w.isTower()) {
+            if (w.isTower() || (isPlateau() && value == null)) {
                 u.hash()
             } else {
                 Hash.hash(u.hash(), w.hash())

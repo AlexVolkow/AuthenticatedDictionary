@@ -1,14 +1,19 @@
 package crypto.skiplist
 
 import crypto.hash.toBytes
+import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
 
 class SkipList<E : Comparable<E>> : CryptoSet<E> {
     private val random = Random(901)
+    private val towerBuilder: () -> Boolean = { if (isRandom) random.nextBoolean() else --height > 0 }
     private var root: SkipListNode<E>
     private var tail: SkipListNode<E>
     private var size: Int = 0
+
+    private var height = 0
+    private var isRandom: Boolean = true
 
     init {
         size = 0
@@ -22,6 +27,12 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
     }
 
     override fun size(): Int = size
+
+    override fun insert(element: E, height: Int): Boolean {
+        this.height = height
+        isRandom = false
+        return insert(element).also { isRandom = true }
+    }
 
     /**
      * Adds e to the skiplist.
@@ -64,7 +75,7 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
                 prevNode = stack.pop()
                 recalculateHashQueue.addLast(prevNode)
             }
-        } while (random.nextBoolean())
+        } while (towerBuilder())
 
         if (root.right != tail) {
             val newTail = SkipListNode(null, null, down = tail)
@@ -96,46 +107,59 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
         println("path")
         println(path)
         val v1 = path.pop()
-        println(path)
         val isFound = v1.value == element
 
         val proof = ArrayList<ByteArray>()
+        val description = mutableListOf<String>()
+        val addNode = { type: String, what: SkipListNode<E> ->
+            when(type) {
+                "value" -> description.add(what.value.toString())
+                "hash" -> description.add("f(${calcHeight(what)}: $what)")
+                else -> throw Exception()
+            }
+         }
         val w1 = v1.right!!
+        val z1 by lazy { w1.right!! }
+
+        when {
+            w1.isPlateau() && z1.isTower() -> addNode("value", z1)
+            w1.isPlateau() && z1.isPlateau() -> addNode("hash", z1)
+        }
 
 
         if (w1.isPlateau()) {
             proof.add(w1.hash())
+            addNode("hash", w1)
         } else {
             proof.add(w1.value.toBytes())
+            addNode("value", w1)
         }
 
-        if (v1.isPlateau()) {
-            proof.add(v1.hash())
-        } else {
-            proof.add(v1.value.toBytes())
-        }
+        proof.add(v1.value.toBytes())
+        addNode("value", v1)
 
         var prevNode = v1
         while (path.size > 1) {
             val v = path.pop()
-            println(proof.joinToString { Arrays.toString(it) })
             val w = v.right!!
             if (w.isPlateau()) {
                 if (w !== prevNode) {
                     proof.add(w.hash())
+                    addNode("hash", w)
                 } else {
                     if (v.isBase()) {
                         proof.add(v.value.toBytes())
+                        addNode("value", v)
                     } else {
                         val u = v.down!!
                         proof.add(u.hash())
+                        addNode("hash", u)
                     }
                 }
             }
             prevNode = v
         }
 
-        val z1 by lazy { w1.right!! }
         return when {
             w1.isTower() -> CryptoPath(isFound, proof)
             w1.isPlateau() && z1.isTower() -> CryptoPath(
@@ -144,7 +168,7 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
             )
             w1.isPlateau() && z1.isPlateau() -> CryptoPath(isFound, listOf(z1.hash()) + proof)
             else -> throw IllegalStateException("SkipList in incorrect state")
-        }
+        }.also { println(description) }
     }
 
     override fun contains(element: E): Boolean {
@@ -209,18 +233,19 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
     private fun findPath(element: E, requireEquals: Boolean): Stack<SkipListNode<E>> {
         val stack = Stack<SkipListNode<E>>()
         var node = root
+        stack.push(node)
 
         do {
             while (node.right!!.right != null
                     && (!requireEquals && node.right!!.value!! < element
                     || requireEquals && node.right!!.value!! <= element)
             ) {
-                stack.push(node)
                 node = node.right!!
+                stack.push(node)
             }
-            stack.push(node)
             if (node.down != null) {
                 node = node.down!!
+                stack.push(node)
             } else {
                 break
             }

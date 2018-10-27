@@ -4,18 +4,19 @@ import crypto.hash.Hash.ZERO
 import java.security.MessageDigest
 
 object Hash {
-    private val ONE get() = ByteArray(1) { 1 }
-    private val TWO get() = ByteArray(1) { 2 }
     val ZERO get() = ByteArray(1)
 
     private val digest = MessageDigest.getInstance("SHA-256")
 
     fun hash(arg1: ByteArray, arg2: ByteArray): ByteArray {
-        return /*digest.digest*/(if (arg1 < arg2) {
-            ONE + arg1 + TWO + arg2
+        if (arg1 < arg2) {
+            digest.update(arg1)
+            digest.update(arg2)
         } else {
-            ONE + arg2 + TWO + arg1
-        })
+            digest.update(arg2)
+            digest.update(arg1)
+        }
+        return digest.digest()
     }
 
     private operator fun ByteArray.compareTo(other: ByteArray): Int {

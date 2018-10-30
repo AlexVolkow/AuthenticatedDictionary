@@ -1,8 +1,6 @@
 package crypto.skiplist
 
-import crypto.hash.Hash
 import crypto.hash.toBytes
-import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -20,11 +18,7 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
         size = 0
         tail = SkipListNode(null)
         root = SkipListNode(null, right = tail)
-        //root.updateHash()
-    }
-
-    fun getHead(): SkipListNode<E> {
-        return root
+        root.hash()
     }
 
     override fun size(): Int = size
@@ -57,7 +51,7 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
                 val newTail = SkipListNode(null, null, down = tail)
                 tail.up = newTail
                 tail = newTail
-                //tail.updateHash()
+                tail.updateHash()
                 val newRoot = SkipListNode(null, tail, down = root)
                 root.up = newRoot
                 root = newRoot
@@ -82,18 +76,18 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
             val newTail = SkipListNode(null, null, down = tail)
             tail.up = newTail
             tail = newTail
-            //tail.updateHash()
+            tail.updateHash()
             val newRoot = SkipListNode(null, tail, down = root)
             root.up = newRoot
             root = newRoot
             recalculateHashQueue.addLast(root)
         }
         for (i in recalculateHashQueue) {
-            //i.updateHash()
+            i.updateHash()
         }
 
         while (stack.isNotEmpty()) {
-            stack.pop()//.updateHash()
+            stack.pop().updateHash()
         }
         return true
     }
@@ -109,33 +103,16 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
         val isFound = v1.value == element
 
         val proof = ArrayList<ByteArray>()
-        val description = mutableListOf<String>()
-        val addNode = { type: String, what: SkipListNode<E> ->
-            when(type) {
-                "value" -> description.add(what.value.toString())
-                "hash" -> description.add("f(${calcHeight(what)}: $what)")
-                else -> throw Exception()
-            }
-         }
+
         val w1 = v1.right!!
-        val z1 by lazy { w1.right!! }
-
-        when {
-            w1.isPlateau() && z1.isTower() -> addNode("value", z1)
-            w1.isPlateau() && z1.isPlateau() -> addNode("hash", z1)
-        }
-
 
         if (w1.isPlateau()) {
             proof.add(w1.hash())
-            addNode("hash", w1)
         } else {
             proof.add(w1.value.toBytes())
-            addNode("value", w1)
         }
 
         proof.add(v1.value.toBytes())
-        addNode("value", v1)
 
         var prevNode = v1
         while (path.size > 0) {
@@ -144,36 +121,19 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
             if (w.isPlateau()) {
                 if (w !== prevNode) {
                     proof.add(w.hash())
-                    addNode("hash", w)
                 } else {
                     if (v.isBase()) {
                         proof.add(v.value.toBytes())
-                        addNode("value", v)
                     } else {
                         val u = v.down!!
                         proof.add(u.hash())
-                        addNode("hash", u)
                     }
                 }
             }
             prevNode = v
         }
 
-        //if (isFound) {
-            return CryptoPath(isFound, proof)
-        //}
-      /*  return when {
-            w1.isTower() -> CryptoPath(isFound, proof)
-            w1.isPlateau() && z1.isTower() -> CryptoPath(
-                    isFound,
-                    listOf(z1.value.toBytes(),w1.value.toBytes()) + proof
-            )
-            w1.isPlateau() && z1.isPlateau() -> CryptoPath(
-                isFound,
-                listOf(z1.hash(), w1.value.toBytes()) + proof
-            )
-            else -> throw IllegalStateException("SkipList in incorrect state")
-        }*/
+        return CryptoPath(isFound, proof)
     }
 
     override fun contains(element: E): Boolean {
@@ -191,24 +151,20 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
             var curNode = stack.pop()
             if (curNode.right!!.right != null && curNode.right!!.value == element) {
                 curNode.right = curNode.right!!.right
-                //curNode.updateHash()
+                curNode.updateHash()
             }
             while (stack.isNotEmpty() && stack.peek().right == curNode) {
                 curNode = stack.pop()
-                // curNode.updateHash()
+                curNode.updateHash()
             }
         }
 
         while (root.down != null && root.down!!.right == tail.down) {
             root = root.down!!
             tail = tail.down!!
-            //root.updateHash()
+            root.updateHash()
         }
         return true
-    }
-
-    override fun iterator(): Iterator<E> {
-        return SkipListIterator(this)
     }
 
     override fun toString(): String {
@@ -242,8 +198,8 @@ class SkipList<E : Comparable<E>> : CryptoSet<E> {
 
         do {
             while (node.right!!.right != null
-                    && (!requireEquals && node.right!!.value!! < element
-                    || requireEquals && node.right!!.value!! <= element)
+                && (!requireEquals && node.right!!.value!! < element
+                        || requireEquals && node.right!!.value!! <= element)
             ) {
                 node = node.right!!
                 stack.push(node)

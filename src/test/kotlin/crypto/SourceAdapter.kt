@@ -29,8 +29,4 @@ class SourceAdapter<T : Comparable<T>> : CryptoSet<T> {
     override fun structureHash(): ByteArray {
         return dict.getBasis().encoded
     }
-
-    override fun iterator(): Iterator<T> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
 }

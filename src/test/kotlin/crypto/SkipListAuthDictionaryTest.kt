@@ -4,6 +4,7 @@ import crypto.skiplist.SkipList
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
 internal class SkipListAuthDictionaryTest {
 
@@ -30,6 +31,7 @@ internal class SkipListAuthDictionaryTest {
         val basis = trustedSource.getBasis()
 
         assertTrue(query.subjectContained())
+        assertEquals(query.subject, 39)
         assertTrue(query.validate(basis))
     }
 
